@@ -1,7 +1,50 @@
-import React from 'react';
-import { TrendingUp, Users, Activity, DollarSign, Award } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { TrendingUp, Users, Activity, DollarSign, Award, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import api from '../utils/api';
+import { useAuth } from '../context/AuthContext';
 
 const MunicipalAdminDashboard = () => {
+    const { user } = useAuth();
+    const [flaggedComplaints, setFlaggedComplaints] = useState([]);
+    const [loadingFlags, setLoadingFlags] = useState(true);
+
+    // Fetch all complaints for the admin's city, then filter for flagged
+    useEffect(() => {
+        const fetchFlaggedComplaints = async () => {
+            if (!user?.city_id) return;
+            try {
+                // In a real app we'd have a specific endpoint /complaints/flagged
+                // For this MVP, we fetch by city and filter
+                const response = await api.get(`/complaints/city/${user.city_id}`);
+                console.log("Admin: Fetched complaints:", response.data);
+                const flagged = response.data.filter(c => c.status === 'flagged_for_review');
+                console.log("Admin: Filtered flagged:", flagged);
+                setFlaggedComplaints(flagged);
+            } catch (err) {
+                console.error("Failed to fetch flagged complaints:", err);
+            } finally {
+                setLoadingFlags(false);
+            }
+        };
+        fetchFlaggedComplaints();
+    }, [user]);
+
+    const handleAdminOverride = async (complaintId, action) => {
+        console.log(`Admin override requested: ID=${complaintId}, action=${action}`);
+        try {
+            const newStatus = action === 'approve' ? 'resolved' : 'rejected';
+            console.log(`Sending PATCH request to /complaints/status/${complaintId} with status: ${newStatus}`);
+            const res = await api.patch(`/complaints/status/${complaintId}`, { status: newStatus });
+            console.log("Status update response:", res.data);
+            
+            // Remove from queue locally
+            setFlaggedComplaints(prev => prev.filter(c => c.id !== complaintId));
+        } catch (err) {
+            console.error("Failed to override complaint status:", err.response?.data || err.message);
+            alert(`Failed to update status: ${err.response?.data?.message || err.message}`);
+        }
+    };
+
     return (
         <div className="w-full max-w-7xl mx-auto p-4 md:p-6 space-y-6">
 
@@ -20,16 +63,106 @@ const MunicipalAdminDashboard = () => {
                         </div>
                     </div>
                     <div className="bg-slate-900/50 backdrop-blur-sm px-4 py-3 rounded-xl border border-white/5 flex items-center">
-                        <TrendingUp className="w-8 h-8 text-emerald-400 mr-3 p-1.5 bg-emerald-500/10 rounded-lg" />
+                        <AlertTriangle className="w-8 h-8 text-rose-400 mr-3 p-1.5 bg-rose-500/10 rounded-lg" />
                         <div className="flex flex-col">
-                            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Resolution Rate</span>
-                            <span className="text-xl font-bold text-white">82%</span>
+                            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">AI Flagged</span>
+                            <span className="text-xl font-bold text-rose-400">{flaggedComplaints.length} Pending</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+                {/* AI Review Queue (Feature 3 Integration) */}
+                <div className="lg:col-span-4 bg-slate-900/50 backdrop-blur-sm rounded-2xl border border-rose-500/20 p-5 shadow-lg shadow-rose-500/5">
+                    <div className="flex justify-between items-center border-b border-rose-500/20 pb-3 mb-4">
+                        <h2 className="text-lg font-semibold text-rose-400 flex items-center">
+                            <AlertTriangle className="w-5 h-5 mr-2" />
+                            AI Flagged Verification Queue
+                        </h2>
+                        <span className="text-xs bg-rose-500/20 text-rose-300 px-3 py-1 rounded-lg">Requires Admin Decision</span>
+                    </div>
+                    
+                    {loadingFlags ? (
+                        <div className="text-slate-400 text-center py-8">Loading AI Flags...</div>
+                    ) : flaggedComplaints.length === 0 ? (
+                        <div className="text-emerald-400 text-center py-8 bg-emerald-500/5 rounded-xl border border-emerald-500/20">
+                            Excellent! No suspicious Ward Officer uploads detected by AI.
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {flaggedComplaints.map(complaint => (
+                                <div key={complaint.id} className="bg-slate-950/50 rounded-xl border border-rose-500/30 p-4">
+                                    <div className="flex justify-between items-start mb-3">
+                                        <h3 className="font-bold text-slate-200 capitalize">Ward {complaint.ward_id} • {complaint.issue_type}</h3>
+                                        <span className="text-xs bg-rose-500/20 text-rose-400 px-2 py-1 rounded font-bold uppercase border border-rose-500/30">
+                                            AI Rejected
+                                        </span>
+                                    </div>
+                                    <p className="text-sm text-slate-400 mb-4">{complaint.text_input}</p>
+                                    
+                                    <div className="flex gap-4 mb-4">
+                                        <div className="flex-1 text-center">
+                                            <p className="text-xs font-semibold text-slate-500 mb-1 tracking-wider uppercase">Citizen "Before"</p>
+                                            <div className="h-24 bg-slate-800 rounded-lg overflow-hidden border border-slate-700 flex items-center justify-center">
+                                                {complaint.image_url ? (
+                                                    <img 
+                                                        src={complaint.image_url.startsWith('http') ? complaint.image_url : `http://localhost:5000${complaint.image_url}`} 
+                                                        alt="Before" 
+                                                        className="w-full h-full object-cover" 
+                                                        onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=No+Preview'; }}
+                                                    />
+                                                ) : <span className="text-xs text-slate-500">No Image</span>}
+                                            </div>
+                                        </div>
+                                        <div className="flex-1 text-center">
+                                            <p className="text-xs font-semibold text-rose-400 mb-1 tracking-wider uppercase">Officer "After"</p>
+                                            <div className="h-24 bg-slate-800 rounded-lg overflow-hidden border border-rose-500/30 flex items-center justify-center relative">
+                                                {complaint.after_image_url ? (
+                                                    <img 
+                                                        src={complaint.after_image_url.startsWith('http') ? complaint.after_image_url : `http://localhost:5000${complaint.after_image_url}`} 
+                                                        alt="After" 
+                                                        className="w-full h-full object-cover" 
+                                                        onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=Pending+AI'; }}
+                                                    />
+                                                ) : (
+                                                    <span className="text-xs font-bold text-rose-500 text-center px-1">AI PROCESSING...</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* AI Verdict Display for Admin */}
+                                    {complaint.ai_feedback && (
+                                        <div className="bg-rose-500/5 border border-rose-500/20 rounded-lg p-3 mt-2">
+                                            <p className="text-[10px] font-bold text-rose-400 uppercase tracking-tight mb-1">AI Reasoning Assessment:</p>
+                                            <p className="text-xs text-slate-300 italic font-medium leading-relaxed">
+                                                "{complaint.ai_feedback}"
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {/* Admin Actions */}
+                                    <div className="flex gap-3 mt-4 pt-4 border-t border-white/5">
+                                        <button 
+                                            onClick={() => handleAdminOverride(complaint.id, 'reject')}
+                                            className="flex-1 bg-slate-800 text-rose-400 hover:bg-rose-500/20 hover:border-rose-500/50 py-2 rounded-lg text-sm font-semibold border border-rose-500/20 transition flex justify-center items-center"
+                                        >
+                                            <XCircle className="w-4 h-4 mr-2" /> Reject Proof
+                                        </button>
+                                        <button 
+                                            onClick={() => handleAdminOverride(complaint.id, 'approve')}
+                                            className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 py-2 rounded-lg text-sm font-semibold transition flex justify-center items-center"
+                                        >
+                                            <CheckCircle className="w-4 h-4 mr-2" /> Override & Approve
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
 
                 {/* Ward Performance Leaderboard */}
                 <div className="lg:col-span-2 bg-slate-900/50 backdrop-blur-sm rounded-2xl border border-white/5 p-5">
@@ -71,85 +204,10 @@ const MunicipalAdminDashboard = () => {
                     </div>
                 </div>
 
-                {/* Misinformation / Trust Graph Placeholder */}
-                <div className="lg:col-span-2 bg-slate-900/50 backdrop-blur-sm rounded-2xl border border-white/5 p-5 flex flex-col">
-                    <h2 className="text-lg font-semibold text-white border-b border-white/10 pb-3 mb-4 flex items-center">
-                        <Users className="w-5 h-5 mr-2 text-fuchsia-400" />
-                        Public Trust & Misinformation Map
-                    </h2>
-                    <div className="bg-slate-950/50 flex-1 rounded-xl flex flex-col items-center justify-center text-slate-500 min-h-[200px] border border-white/5 p-4">
-                        <p className="font-medium text-sm text-center mb-3">Graph Neural Network Integration</p>
-                        <div className="text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20 px-4 py-2 rounded-full mb-3 flex items-center">
-                            <span className="w-2 h-2 rounded-full bg-rose-500 mr-2 animate-pulse"></span>
-                            Alert: "Water Contamination" rumor detected in Ward 8
-                        </div>
-                        <button className="mt-2 text-sm bg-fuchsia-600/20 border border-fuchsia-500/30 text-fuchsia-300 px-4 py-2 rounded-lg hover:bg-fuchsia-600/30 transition">Generate Official Rebuttal (LLM)</button>
-                    </div>
-                </div>
-
                 {/* Welfare Allocation Simulator */}
                 <div className="lg:col-span-2 bg-slate-900/50 backdrop-blur-sm rounded-2xl border border-white/5 p-5">
-                    <h2 className="text-lg font-semibold text-white border-b border-white/10 pb-3 mb-4">Welfare Allocation Simulator</h2>
-                    <p className="text-sm text-slate-400 mb-6 font-medium">Simulate the impact of budget allocation based on historical civic issue resolution data.</p>
-
-                    <div className="space-y-5">
-                        <div>
-                            <label className="text-sm font-medium text-slate-300 mb-1.5 block">Select Ward</label>
-                            <select className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-200 outline-none focus:border-indigo-500 transition">
-                                <option>Ward 8 (East) - High Recurrence Rate</option>
-                                <option>Ward 5 (North)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="text-sm font-medium text-slate-300 mb-1.5 block">Allocate Budget (₹ Lakhs)</label>
-                            <input type="range" className="w-full accent-indigo-500" min="10" max="500" defaultValue="150" />
-                            <div className="text-right text-xs text-indigo-400 font-bold mt-2">₹ 150 Lakhs</div>
-                        </div>
-                        <button className="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-500 transition shadow-lg shadow-indigo-500/20 mt-2">
-                            Run Causal Simulation
-                        </button>
-                        <div className="bg-indigo-500/10 p-4 rounded-xl border border-indigo-500/20 mt-4">
-                            <span className="text-xs font-bold text-indigo-400 uppercase tracking-wider">Predicted Impact</span>
-                            <p className="text-sm text-indigo-200 mt-2 leading-relaxed">Allocating ₹150L to Ward 8 sanitation will reduce recurrence by 45% and boost local trust score by +12 pts in 3 months.</p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Budget Utilization Dashboard */}
-                <div className="lg:col-span-2 bg-slate-900/50 backdrop-blur-sm rounded-2xl border border-white/5 p-5">
-                    <h2 className="text-lg font-semibold text-white border-b border-white/10 pb-3 mb-4 flex items-center">
-                        <DollarSign className="w-5 h-5 mr-2 text-emerald-400" />
-                        Budget Utilization
-                    </h2>
-                    <div className="space-y-8 mt-6">
-                        <div>
-                            <div className="flex justify-between text-sm mb-2">
-                                <span className="font-medium text-slate-300">Road Infrastructure</span>
-                                <span className="text-slate-500 font-medium">₹45Cr / ₹60Cr <span className="text-indigo-400">(75%)</span></span>
-                            </div>
-                            <div className="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
-                                <div className="bg-gradient-to-r from-indigo-600 to-indigo-400 h-2.5 rounded-full" style={{ width: '75%' }}></div>
-                            </div>
-                        </div>
-                        <div>
-                            <div className="flex justify-between text-sm mb-2">
-                                <span className="font-medium text-slate-300">Sanitation & Waste</span>
-                                <span className="text-slate-500 font-medium">₹80Cr / ₹120Cr <span className="text-amber-400">(66%)</span></span>
-                            </div>
-                            <div className="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
-                                <div className="bg-gradient-to-r from-amber-600 to-amber-400 h-2.5 rounded-full" style={{ width: '66%' }}></div>
-                            </div>
-                        </div>
-                        <div>
-                            <div className="flex justify-between text-sm mb-2">
-                                <span className="font-medium text-slate-300">Civic Tech & AI</span>
-                                <span className="text-slate-500 font-medium">₹2Cr / ₹10Cr <span className="text-rose-400">(20%)</span></span>
-                            </div>
-                            <div className="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
-                                <div className="bg-gradient-to-r from-rose-600 to-rose-400 h-2.5 rounded-full" style={{ width: '20%' }}></div>
-                            </div>
-                        </div>
-                    </div>
+                    <h2 className="text-lg font-semibold text-white border-b border-white/10 pb-3 mb-4">Welfare Allocation</h2>
+                    <p className="text-sm text-slate-400 mb-6 font-medium">Coming Soon (Feature 2 Integration)</p>
                 </div>
 
             </div>
