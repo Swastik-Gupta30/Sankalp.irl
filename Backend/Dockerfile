@@ -15,5 +15,5 @@ COPY . .
 # Expose the Express server port
 EXPOSE 5000
 
-# Start the application
-CMD ["node", "server.js"]
+# Start the application with nodemon for auto-reloading
+CMD ["npx", "nodemon", "server.js"]

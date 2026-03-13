@@ -1,14 +1,12 @@
-import { Pool } from 'pg';
-import dotenv from 'dotenv';
-
-dotenv.config();
+const { Pool } = require('pg');
+require('dotenv').config();
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
 pool.on('connect', () => {
-  console.log('Connected to PostgreSQL database');
+  console.log('Connected to the PostgreSQL database with PostGIS');
 });
 
 pool.on('error', (err) => {
@@ -16,4 +14,6 @@ pool.on('error', (err) => {
   process.exit(-1);
 });
 
-export default pool;
+module.exports = {
+  query: (text, params) => pool.query(text, params),
+};
