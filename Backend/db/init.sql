@@ -18,23 +18,32 @@ INSERT INTO cities (city_name, state, total_wards) VALUES
     ('Kolkata', 'West Bengal', 144)
 ON CONFLICT (city_name) DO NOTHING;
 
--- 2. Wards Table (with Geospatial boundaries)
+-- 2. Wards Table (with optional Geospatial boundaries)
 -- Note: polygon_geometry uses SRID 4326 (WGS 84 - Standard GPS coordinates)
+-- polygon_geometry is nullable to support simple wards without polygon data
 CREATE TABLE IF NOT EXISTS wards (
     id SERIAL PRIMARY KEY,
     city_id INTEGER REFERENCES cities(id) ON DELETE CASCADE,
     ward_number VARCHAR(50) NOT NULL,
     ward_name VARCHAR(255) NOT NULL,
-    polygon_geometry GEOMETRY(Polygon, 4326) NOT NULL,
+    polygon_geometry GEOMETRY(Polygon, 4326),
     UNIQUE(city_id, ward_number)
 );
 
--- Insert Dummy Ward for Testing routing (Delhi test polygon)
--- This polygon represents a small box
-INSERT INTO wards (city_id, ward_number, ward_name, polygon_geometry) 
-SELECT id, 'W1', 'Test Ward Central', ST_GeomFromText('POLYGON((77.20 28.60, 77.25 28.60, 77.25 28.65, 77.20 28.65, 77.20 28.60))', 4326)
-FROM cities WHERE city_name = 'Delhi'
-ON CONFLICT DO NOTHING;
+-- Insert Delhi Ward 1 through Ward 36 (for Feature 2: welfare allocation)
+-- ward_number is the string '1' through '36', maps 1:1 to IHDS stateid
+DO $$
+DECLARE
+    delhi_city_id INTEGER;
+    i INTEGER;
+BEGIN
+    SELECT id INTO delhi_city_id FROM cities WHERE city_name = 'Delhi' LIMIT 1;
+    FOR i IN 1..36 LOOP
+        INSERT INTO wards (city_id, ward_number, ward_name, polygon_geometry)
+        VALUES (delhi_city_id, i::TEXT, 'Ward ' || i, NULL)
+        ON CONFLICT (city_id, ward_number) DO NOTHING;
+    END LOOP;
+END $$;
 
 -- 3. Civic Bodies Table
 CREATE TABLE IF NOT EXISTS civic_bodies (

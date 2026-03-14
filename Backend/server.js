@@ -6,6 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const complaintRoutes = require('./routes/complaintRoutes');
 const mapRoutes = require('./routes/mapRoutes');
 const publicRoutes = require('./routes/publicRoutes');
+const welfareRoutes = require('./routes/welfareRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -20,6 +21,7 @@ app.use('/auth', authRoutes);
 app.use('/complaints', complaintRoutes);
 app.use('/map', mapRoutes);
 app.use('/public', publicRoutes);
+app.use('/welfare', welfareRoutes);
 
 // Basic Route for Healthcheck
 app.get('/', (req, res) => {

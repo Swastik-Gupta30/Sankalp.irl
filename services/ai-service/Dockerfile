@@ -16,13 +16,23 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # The models are quite large and download at runtime.
 # Running them once during build pre-downloads the models.
-# Alternatively, mount a volume or just download at startup
+# Split into multiple layers to avoid single giant layer issues.
+COPY text_classifier.py .
+RUN python -c "from text_classifier import load_text_model; load_text_model()" \
+ && rm -rf /root/.cache/pip
+
+COPY audio_classifier.py .
+RUN python -c "from audio_classifier import load_audio_model; load_audio_model()" \
+ && rm -rf /root/.cache/pip
+
+COPY image_classifier.py .
+RUN python -c "from image_classifier import load_image_model; load_image_model()" \
+ && rm -rf /root/.cache/pip
+
 COPY . .
-RUN python -c "\
-from text_classifier import load_text_model; load_text_model(); \
-from audio_classifier import load_audio_model; load_audio_model(); \
-from image_classifier import load_image_model; load_image_model(); \
-print('Pre-download successful')"
+
+# Final check
+RUN python -c "print('Pre-download successful')"
 
 EXPOSE 8000
 

@@ -270,49 +270,58 @@ def get_sample_allocations(allocations_df, sample_size=35):
 def format_allocation_for_api(allocations_df, duration=1, policies=None):
     """
     Format allocation results for API response
-    
+
     Args:
         allocations_df: Allocation results
         duration: Duration in months
         policies: List of policy columns to include
-    
+
     Returns:
         List of dicts ready for JSON serialization
     """
     if allocations_df.empty:
         return []
-    
+
     if policies is None:
         policies = ['cash_transfer', 'food_subsidy', 'training_program', 'nrega_program']
-        
+
     result = []
-    
+
     for _, row in allocations_df.iterrows():
-        # Ensure uplift_pct is calculated for comment
-        uplift_pct = f"{(row['uplift'] * 100):.2f}%"
+        uplift_raw = float(row['uplift']) if 'uplift' in row else 0.0
+        uplift_pct = f"{(uplift_raw * 100):.2f}%"
         state_name = get_state_name(int(row['stateid'])) if 'stateid' in row else "Unknown"
-        
-        # Prepare row-like dict for comment generator
+
+        # Determine all active policies for this household (can be multiple)
+        active_policies = []
+        for p in policies:
+            if p in row and row[p] > 0:
+                active_policies.append(p)
+        primary_policy_label = ' + '.join(p.replace('_', ' ').title() for p in active_policies) if active_policies else 'None'
+
         row_for_comment = row.to_dict()
         row_for_comment['uplift_pct'] = uplift_pct
         row_for_comment['state_name'] = state_name
-        
+
         comment = generate_comment(row_for_comment, duration, policies)
-        
+
         allocation = {
             'id': str(row['id']) if 'id' in row else None,
             'stateid': int(row['stateid']) if 'stateid' in row else None,
             'state_name': state_name,
-            'uplift_pct': uplift_pct,
+            'ward': state_name,               # alias for frontend convenience
+            'policy': primary_policy_label,    # human-readable active policy name
+            'uplift': round(uplift_raw, 6),    # raw float for display
+            'uplift_pct': uplift_pct,          # formatted string
             'cost': round(row['cost'], 2) if 'cost' in row else None,
             'Comment': comment
         }
-        
-        # Add policy amounts (ensuring all canonical policies are present, even if 0)
+
+        # Add individual policy amounts
         for policy in policies:
             val = row[policy] if policy in row else 0
             allocation[policy] = round(val, 2) if val > 0 else 0
-        
+
         result.append(allocation)
-    
+
     return result
