@@ -20,6 +20,7 @@ def main():
     parser.add_argument('--budget', type=float, default=2000000, help='Total welfare budget')
     parser.add_argument('--schemes', type=str, default="all", help='Comma-separated list of allowed schemes')
     parser.add_argument('--duration', type=int, default=1, help='Duration in months')
+    parser.add_argument('--ward', type=int, default=None, help='Filter by ward/stateid (1-36). If not set, runs on all wards.')
     args = parser.parse_args()
 
     # Log to stderr so stdout stays clean for JSON
@@ -34,6 +35,15 @@ def main():
         return
 
     print(f"Data Loaded. Shape: {df.shape}", file=sys.stderr)
+    
+    # Filter by ward (stateid) if specified
+    if args.ward is not None:
+        print(f"Filtering data for Ward {args.ward} (stateid={args.ward})...", file=sys.stderr)
+        df = df[df['stateid'] == args.ward].copy()
+        if df.empty:
+            print(json.dumps({"error": f"No data found for ward {args.ward}"}), file=sys.stdout)
+            return
+        print(f"Filtered. Ward {args.ward} shape: {df.shape}", file=sys.stderr)
     
     # 2. Prepare Data
     ids, X, T, Y = split_features_target(df)
