@@ -108,7 +108,7 @@ const MunicipalAdminDashboard = () => {
                                             <div className="h-24 bg-slate-800 rounded-lg overflow-hidden border border-slate-700 flex items-center justify-center">
                                                 {complaint.image_url ? (
                                                     <img 
-                                                        src={complaint.image_url.startsWith('http') ? complaint.image_url : `http://localhost:5000${complaint.image_url}`} 
+                                                        src={complaint.image_url.startsWith('http') ? complaint.image_url : `http://localhost:5001${complaint.image_url}`} 
                                                         alt="Before" 
                                                         className="w-full h-full object-cover" 
                                                         onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=No+Preview'; }}
@@ -121,7 +121,7 @@ const MunicipalAdminDashboard = () => {
                                             <div className="h-24 bg-slate-800 rounded-lg overflow-hidden border border-rose-500/30 flex items-center justify-center relative">
                                                 {complaint.after_image_url ? (
                                                     <img 
-                                                        src={complaint.after_image_url.startsWith('http') ? complaint.after_image_url : `http://localhost:5000${complaint.after_image_url}`} 
+                                                        src={complaint.after_image_url.startsWith('http') ? complaint.after_image_url : `http://localhost:5001${complaint.after_image_url}`} 
                                                         alt="After" 
                                                         className="w-full h-full object-cover" 
                                                         onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=Pending+AI'; }}
