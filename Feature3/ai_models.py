@@ -90,7 +90,7 @@ def verify_issue_resolution(before_image: Image.Image, after_image: Image.Image)
         logger.info("Sending images to Gemini API for reasoning...")
         
         response = client.models.generate_content(
-            model='gemini-1.5-flash',
+            model='gemini-2.0-flash',
             contents=[prompt, before_image, after_image],
             config=genai.types.GenerateContentConfig(
                 response_mime_type="application/json"
