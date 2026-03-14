@@ -7,44 +7,123 @@ const path = require('path');
 
 const createComplaint = async (req, res) => {
     try {
-        const { text_input, audio_url, issue_type, priority_score, latitude, longitude } = req.body;
+        const { text_input, priority_score } = req.body;
         const user_id = req.user.id;
-        let image_url = req.body.image_url || null;
+        
+        let image_url = null;
+        let audio_url = null;
 
-        // If a file was uploaded, use its path as the image_url
-        if (req.file) {
-            image_url = `/uploads/${req.file.filename}`;
+        let imageFile = null;
+        let audioFile = null;
+
+        // The route now uses upload.fields
+        if (req.files) {
+            if (req.files.image && req.files.image.length > 0) {
+                imageFile = req.files.image[0];
+                image_url = `/uploads/${imageFile.filename}`;
+            }
+            if (req.files.audio && req.files.audio.length > 0) {
+                audioFile = req.files.audio[0];
+                audio_url = `/uploads/${audioFile.filename}`;
+            }
         }
 
-        // 1. Determine ward using PostGIS
-        const ward_id = await geoService.findWardByCoordinates(latitude, longitude);
+        // AI Classification Integration
+        let ai_issue_type = "Unknown";
+        let ai_department = "Unknown";
+        let ai_confidence = 0.0;
 
-        if (!ward_id) {
-            return res.status(400).json({ message: 'Coordinates do not fall within any known ward.' });
+        try {
+            if (imageFile) {
+                console.log("Sending image to AI classification...");
+                const formData = new FormData();
+                const imageBuffer = fs.readFileSync(imageFile.path);
+                formData.append('image', imageBuffer, {
+                    filename: imageFile.originalname,
+                    contentType: imageFile.mimetype
+                });
+                const aiRes = await axios.post('http://ai-service:8000/classify/image', formData, {
+                    headers: formData.getHeaders(),
+                    timeout: 30000
+                });
+                ai_issue_type = aiRes.data.issue_type;
+                ai_department = aiRes.data.department;
+                ai_confidence = aiRes.data.confidence;
+            } else if (audioFile) {
+                console.log("Sending audio to AI classification...");
+                const formData = new FormData();
+                const audioBuffer = fs.readFileSync(audioFile.path);
+                formData.append('audio', audioBuffer, {
+                    filename: audioFile.originalname,
+                    contentType: audioFile.mimetype
+                });
+                const aiRes = await axios.post('http://ai-service:8000/classify/audio', formData, {
+                    headers: formData.getHeaders(),
+                    timeout: 30000
+                });
+                ai_issue_type = aiRes.data.issue_type;
+                ai_department = aiRes.data.department;
+                ai_confidence = aiRes.data.confidence;
+            } else if (text_input) {
+                console.log("Sending text to AI classification...");
+                const aiRes = await axios.post('http://ai-service:8000/classify/text', { text: text_input }, {
+                    timeout: 10000
+                });
+                ai_issue_type = aiRes.data.issue_type;
+                ai_department = aiRes.data.department;
+                ai_confidence = aiRes.data.confidence;
+            }
+        } catch (aiErr) {
+            console.error("AI service error during complaint creation:", aiErr.message);
         }
 
-        // Fetch city_id for this ward to populate the complaints table correctly
-        const wardResult = await db.query('SELECT city_id FROM wards WHERE id = $1', [ward_id]);
-        if (wardResult.rows.length === 0) {
-            return res.status(500).json({ message: 'Ward exists but city link missing.' });
-        }
-        const city_id = wardResult.rows[0].city_id;
+        // Note: The prompt instructed setting ward_id, latitude, longitude to NULL, 
+        // but latitude/longitude have NOT NULL constraints in the database schema.
+        // We will pull latitude and longitude from the request body.
+        const { latitude, longitude } = req.body;
+        const ward_id = req.body.ward_id || 1;
+        let city_id = req.body.city_id || 2; // Defaulting to 2 (Delhi) since our test ward is there 
 
-        // 2. Determine department (In reality from ML pipeline, we mock for now or expect from frontend)
-        // For this prompt, if civic_body_id is not provided, we fall back to a default (e.g. 1 - PWD)
-        // A real system would have the ML service inject this
-        const civic_body_id = req.body.civic_body_id || 1; 
+        // 2. Determine department (Map AI department text to civic_body_id)
+        // From db/init.sql, civic_bodies are:
+        // 1: Public Works Department (PWD)
+        // 2: Water Works Department
+        // 3: Sanitation Department
+        // 4: Electricity Department
+        // 5: Urban Planning Authority
+        
+        const departmentMap = {
+            "Public Works Department": 1,
+            "Water Works": 2,
+            "Sanitation": 3,
+            "Electrical Works": 4
+        };
+        
+        // AI returns "department" along with "issue_type". We grab it from aiRes data if it exists.
+        // If the frontend explicitly sends one, use that, otherwise map the AI one, fallback to 1 (PWD)
+        const mappedId = ai_department ? departmentMap[ai_department] : null;
+        const civic_body_id = req.body.civic_body_id || mappedId || 1; 
 
         // 3. Insert complaint into database
         const newComplaint = await db.query(
             `INSERT INTO complaints 
-            (user_id, city_id, ward_id, civic_body_id, text_input, audio_url, image_url, issue_type, priority_score, latitude, longitude) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
+            (user_id, city_id, ward_id, civic_body_id, text_input, audio_url, image_url, issue_type, priority_score, latitude, longitude, status) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
             RETURNING *`,
-            [user_id, city_id, ward_id, civic_body_id, text_input, audio_url, image_url, issue_type, priority_score || 0, latitude, longitude]
+            [user_id, city_id, ward_id, civic_body_id, text_input, audio_url, image_url, ai_issue_type, priority_score || 0, latitude, longitude, 'reported']
         );
 
-        res.status(201).json({ message: 'Complaint created successfully', complaint: newComplaint.rows[0] });
+        // Reverse map so we can tell the frontend which department it is friendly string
+        const departmentStringMap = {
+            1: "Public Works Department (PWD)",
+            2: "Water Works Department",
+            3: "Sanitation Department",
+            4: "Electricity Department",
+            5: "Urban Planning Authority"
+        };
+        const departmentName = departmentStringMap[civic_body_id] || "Unknown Department";
+
+        res.status(201).json({ message: 'Complaint created successfully', complaint: newComplaint.rows[0], confidence: ai_confidence, department: departmentName });
 
     } catch (error) {
         console.error(error);
@@ -78,7 +157,7 @@ const getComplaintsByWard = async (req, res) => {
         }
 
         if (req.user && req.user.role === 'ward_staff') {
-            query += ' AND civic_body_id = $2';
+            query += ' AND civic_body_id = $' + (params.length + 1);
             params.push(req.user.civic_body_id);
         }
 
@@ -104,10 +183,18 @@ const updateComplaintStatus = async (req, res) => {
             return res.status(400).json({ message: 'Invalid status update' });
         }
 
-        const updatedComplaint = await db.query(
-            'UPDATE complaints SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
-            [status, id]
-        );
+        let updatedComplaint;
+        if (status === 'rejected') {
+            updatedComplaint = await db.query(
+                "UPDATE complaints SET status = $1, after_image_url = NULL, ai_feedback = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3 RETURNING *",
+                ['in_progress', 'REJECTED BY ADMIN: Your proof of resolution was not accepted. Please re-upload a clear completion photo.', id]
+            );
+        } else {
+            updatedComplaint = await db.query(
+                'UPDATE complaints SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
+                [status, id]
+            );
+        }
 
         if (updatedComplaint.rows.length === 0) {
             console.warn(`No complaint found with ID ${id} to update.`);
@@ -219,10 +306,22 @@ const verifyResolution = async (req, res) => {
     }
 };
 
+const getMyComplaints = async (req, res) => {
+    try {
+        const user_id = req.user.id;
+        const complaints = await db.query('SELECT * FROM complaints WHERE user_id = $1 ORDER BY created_at DESC', [user_id]);
+        res.json(complaints.rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error retrieving complaints' });
+    }
+};
+
 module.exports = {
    createComplaint,
    getComplaintsByCity,
    getComplaintsByWard,
    updateComplaintStatus,
-   verifyResolution
+   verifyResolution,
+   getMyComplaints
 };
