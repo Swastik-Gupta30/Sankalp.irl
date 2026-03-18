@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { TrendingUp, Users, Activity, DollarSign, Award, AlertTriangle, CheckCircle, XCircle, BarChart2, Zap, RefreshCw, ChevronDown } from 'lucide-react';
+import { TrendingUp, Users, Activity, DollarSign, Award, AlertTriangle, CheckCircle, XCircle, BarChart2, Zap, RefreshCw, ChevronDown, MapPin } from 'lucide-react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import CivicHeatmap from '../components/CivicHeatmap';
 
 // ─── Welfare Optimizer Component ─────────────────────────────────────────────
 const WelfareOptimizer = () => {
@@ -272,7 +273,7 @@ const MunicipalAdminDashboard = () => {
     const { user } = useAuth();
     const [flaggedComplaints, setFlaggedComplaints] = useState([]);
     const [loadingFlags, setLoadingFlags] = useState(true);
-    const [activeTab, setActiveTab] = useState('review'); // 'review' | 'welfare'
+    const [activeTab, setActiveTab] = useState('review'); // 'review' | 'welfare' | 'leaderboard' | 'map'
 
     useEffect(() => {
         const fetchFlaggedComplaints = async () => {
@@ -332,7 +333,8 @@ const MunicipalAdminDashboard = () => {
             <div className="flex gap-2 border-b border-white/10 pb-0">
                 {[
                     { id: 'review', label: 'AI Review Queue', icon: AlertTriangle },
-                    { id: 'welfare', label: 'Welfare Optimizer (Feature 2)', icon: Zap },
+                    { id: 'welfare', label: 'Welfare Optimizer', icon: Zap },
+                    { id: 'map', label: 'City Heatmap', icon: MapPin },
                     { id: 'leaderboard', label: 'Ward Leaderboard', icon: Award },
                 ].map(tab => (
                     <button
@@ -459,6 +461,36 @@ const MunicipalAdminDashboard = () => {
                         <span className="text-xs bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-lg border border-indigo-500/30">Feature 2 Active</span>
                     </div>
                     <WelfareOptimizer />
+                </div>
+            )}
+
+            {/* City Heatmap Tab */}
+            {activeTab === 'map' && (
+                <div className="bg-slate-900/50 backdrop-blur-sm rounded-2xl border border-indigo-500/20 p-5 shadow-lg shadow-indigo-500/5 flex flex-col h-[700px]">
+                    <div className="flex justify-between items-center border-b border-indigo-500/20 pb-3 mb-5 shrink-0">
+                        <div>
+                            <h2 className="text-lg font-semibold text-indigo-300 flex items-center">
+                                <MapPin className="w-5 h-5 mr-2" />
+                                Live City Intelligence Map
+                            </h2>
+                            <p className="text-xs text-slate-500 mt-0.5">Real-time civic issue density mapped across all 36 wards</p>
+                        </div>
+                    </div>
+                    <div className="flex-1 w-full bg-slate-800/50 rounded-xl overflow-hidden border border-slate-700 relative">
+                        <CivicHeatmap targetType="city" targetId={user?.city_id || 1} showPolygons={true} />
+                        
+                        {/* Map Legend */}
+                        <div className="absolute bottom-6 right-6 z-[1000] bg-slate-900/90 backdrop-blur-md border border-slate-700 p-4 rounded-xl shadow-2xl">
+                            <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Issue Density</h4>
+                            <div className="space-y-2">
+                                <div className="flex items-center"><div className="w-3 h-3 rounded-full bg-rose-700 mr-2 shadow-[0_0_8px_rgba(159,18,57,0.8)]"></div><span className="text-xs text-slate-400">Critical / High Volume</span></div>
+                                <div className="flex items-center"><div className="w-3 h-3 rounded-full bg-red-500 mr-2 shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div><span className="text-xs text-slate-400">Reported</span></div>
+                                <div className="flex items-center"><div className="w-3 h-3 rounded-full bg-amber-500 mr-2 shadow-[0_0_8px_rgba(245,158,11,0.8)]"></div><span className="text-xs text-slate-400">In Progress</span></div>
+                                <div className="flex items-center"><div className="w-3 h-3 rounded-full bg-emerald-500 mr-2 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div><span className="text-xs text-slate-400">Awaiting Review</span></div>
+                                <div className="flex items-center"><div className="w-3 h-3 rounded-full bg-sky-500 mr-2 shadow-[0_0_8px_rgba(14,165,233,0.8)]"></div><span className="text-xs text-slate-400">Resolved</span></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
 

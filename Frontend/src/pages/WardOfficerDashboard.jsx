@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Map, Clock, Image as ImageIcon, Send, Camera, CheckCircle, AlertTriangle, Sparkles, RefreshCw } from 'lucide-react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import CivicHeatmap from '../components/CivicHeatmap';
 
 const WardSummaryCard = ({ wardId }) => {
     const [summary, setSummary] = useState(null);
@@ -214,10 +215,28 @@ const WardOfficerDashboard = () => {
                     </div>
                 </div>
 
-                {/* AI Ward Activity Summary */}
-                <div className="bg-slate-900/50 backdrop-blur-sm rounded-2xl border border-white/5 p-5 flex flex-col">
-                    <h2 className="text-lg font-semibold text-white border-b border-white/10 pb-2 mb-4">AI Ward Summary</h2>
-                    <WardSummaryCard wardId={user?.ward_id} />
+                {/* AI Ward Activity Summary & Map */}
+                <div className="bg-slate-900/50 backdrop-blur-sm rounded-2xl border border-white/5 p-5 flex flex-col space-y-6">
+                    <div>
+                        <h2 className="text-lg font-semibold text-white border-b border-white/10 pb-2 mb-4">AI Ward Summary</h2>
+                        <WardSummaryCard wardId={user?.ward_id} />
+                    </div>
+                    
+                    <div className="flex-1 flex flex-col min-h-[300px]">
+                        <h2 className="text-sm font-semibold text-slate-300 mb-2 flex items-center">
+                            <Map className="w-4 h-4 mr-2 text-indigo-400" />
+                            Live Ward Heatmap
+                        </h2>
+                        <div className="bg-slate-800/50 border border-slate-700 w-full h-full min-h-[250px] rounded-xl overflow-hidden relative">
+                            {user?.ward_id ? (
+                                <CivicHeatmap targetType="ward" targetId={user.ward_id} showPolygons={true} />
+                            ) : (
+                                <div className="flex items-center justify-center h-full text-slate-500">
+                                    Loading map...
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
                 {/* Evidence Verification (Feature 3) */}
