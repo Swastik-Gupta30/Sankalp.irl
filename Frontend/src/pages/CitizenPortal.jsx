@@ -4,6 +4,7 @@ import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import LocationPickerModal from '../components/LocationPickerModal';
 import CivicHeatmap from '../components/CivicHeatmap';
+import ChatWidget from '../components/ChatWidget';
 
 const CitizenPortal = () => {
     const { user } = useAuth();
@@ -248,6 +249,9 @@ const CitizenPortal = () => {
                 </div>
 
             </div>
+
+            {/* AI Agent Chat Widget */}
+            <ChatWidget role="citizen" userId={user?.id} />
         </div>
     );
 };

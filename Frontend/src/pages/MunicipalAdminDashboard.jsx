@@ -3,6 +3,7 @@ import { TrendingUp, Users, Activity, DollarSign, Award, AlertTriangle, CheckCir
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import CivicHeatmap from '../components/CivicHeatmap';
+import ChatWidget from '../components/ChatWidget';
 
 // ─── Welfare Optimizer Component ─────────────────────────────────────────────
 const WelfareOptimizer = () => {
@@ -292,9 +293,8 @@ const MunicipalAdminDashboard = () => {
                     { id: 'heatmap', label: 'City Heatmap', icon: Activity },
                 ].map(tab => (
                     <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl text-sm font-semibold border-b-2 transition -mb-px ${
-                            activeTab === tab.id ? 'border-[#1B3A6F] text-[#1B3A6F] bg-[#1B3A6F]/5' : 'border-transparent text-[#9CA3AF] hover:text-[#6B7280]'
-                        }`}>
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl text-sm font-semibold border-b-2 transition -mb-px ${activeTab === tab.id ? 'border-[#1B3A6F] text-[#1B3A6F] bg-[#1B3A6F]/5' : 'border-transparent text-[#9CA3AF] hover:text-[#6B7280]'
+                            }`}>
                         <tab.icon className="w-4 h-4" />
                         {tab.label}
                         {tab.id === 'review' && flaggedComplaints.length > 0 && (
@@ -326,9 +326,8 @@ const MunicipalAdminDashboard = () => {
                                 <div key={complaint.id} className="bg-[#F5F7FA] rounded-xl border border-[#DC2626]/20 p-4">
                                     <div className="flex justify-between items-start mb-3">
                                         <h3 className="font-bold text-[#1F2937] capitalize">Ward {complaint.ward_id} • {complaint.issue_type}</h3>
-                                        <span className={`text-xs px-2 py-1 rounded font-bold uppercase border ${
-                                            complaint.status === 'flagged_for_review' ? 'bg-red-50 text-[#DC2626] border-[#DC2626]/20' : 'bg-green-50 text-[#138808] border-[#138808]/20'
-                                        }`}>
+                                        <span className={`text-xs px-2 py-1 rounded font-bold uppercase border ${complaint.status === 'flagged_for_review' ? 'bg-red-50 text-[#DC2626] border-[#DC2626]/20' : 'bg-green-50 text-[#138808] border-[#138808]/20'
+                                            }`}>
                                             {complaint.status === 'flagged_for_review' ? '🚩 AI Flagged' : '✅ Resolved'}
                                         </span>
                                     </div>
@@ -432,6 +431,9 @@ const MunicipalAdminDashboard = () => {
                     </div>
                 </div>
             )}
+
+            {/* AI Agent Chat Widget */}
+            <ChatWidget role="admin" userId={user?.id} />
         </div>
     );
 };

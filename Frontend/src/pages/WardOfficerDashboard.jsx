@@ -3,6 +3,7 @@ import { Map, Image as ImageIcon, Camera, CheckCircle, AlertCircle, Sparkles, Re
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import CivicHeatmap from '../components/CivicHeatmap';
+import ChatWidget from '../components/ChatWidget';
 
 const WardFeedback = ({ wardId }) => {
     const [feedback, setFeedback] = useState([]);
@@ -357,6 +358,9 @@ const WardOfficerDashboard = () => {
                 </div>
 
             </div>
+
+            {/* AI Agent Chat Widget */}
+            <ChatWidget role="ward_officer" userId={user?.id} />
         </div>
     );
 };

@@ -68,16 +68,16 @@ const CivicHeatmap = ({ targetType, targetId, showPolygons = true }) => {
                         setGeoJson(geoRes.data);
                         // Fit bounds to entire city isn't provided directly by the endpoint, 
                         // so we just rely on default center and zoom for city
-                    } 
+                    }
                     // To do a single ward geometry, we could add a new endpoint, 
                     // but for simplicity, we'll fetch all city wards and filter out the target ward
                     else if (targetType === 'ward') {
                         // Assuming city is 1 (Delhi)
                         const geoRes = await api.get(`/map/wards/1`);
-                        
+
                         // Filter for just this ward
                         const feature = geoRes.data.features.find(f => f.properties.ward_id === targetId);
-                        
+
                         if (feature) {
                             setGeoJson({
                                 type: 'FeatureCollection',
@@ -122,9 +122,9 @@ const CivicHeatmap = ({ targetType, targetId, showPolygons = true }) => {
     };
 
     return (
-        <MapContainer 
-            center={defaultCenter} 
-            zoom={targetType === 'city' ? 11 : 13} 
+        <MapContainer
+            center={defaultCenter}
+            zoom={targetType === 'city' ? 11 : 13}
             style={{ height: '100%', width: '100%', zIndex: 0 }}
             className="rounded-xl"
         >
