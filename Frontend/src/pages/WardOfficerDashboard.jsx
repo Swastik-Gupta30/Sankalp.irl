@@ -1,8 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import { Map, Image as ImageIcon, Camera, CheckCircle, AlertCircle, Sparkles, RefreshCw } from 'lucide-react';
+import { Map, Image as ImageIcon, Camera, CheckCircle, AlertCircle, Sparkles, RefreshCw, MessageCircle } from 'lucide-react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import CivicHeatmap from '../components/CivicHeatmap';
+
+const WardFeedback = ({ wardId }) => {
+    const [feedback, setFeedback] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (!wardId) return;
+        const fetchFeedback = async () => {
+            setLoading(true);
+            try {
+                const res = await api.get(`/communication/ward/${wardId}/feedback`);
+                setFeedback(res.data.feedback || []);
+            } catch (err) {
+                console.error('Failed to load feedback:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchFeedback();
+    }, [wardId]);
+
+    if (loading) return <div className="text-sm text-gray-500">Loading feedback...</div>;
+    if (feedback.length === 0) return <div className="text-sm text-gray-500">No citizen feedback received for this ward yet.</div>;
+
+    return (
+        <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
+            {feedback.map(f => (
+                <div key={f.id} className="p-3 bg-gray-50 border rounded-lg">
+                    <div className="flex justify-between items-start mb-1">
+                        <span className="text-xs font-semibold text-blue-700 uppercase bg-blue-100 px-2 py-0.5 rounded">
+                            {f.issue_type}
+                        </span>
+                        <span className="text-[10px] text-gray-400">
+                            {new Date(f.created_at).toLocaleString()}
+                        </span>
+                    </div>
+                    <p className="text-sm text-gray-800 my-1">{f.comment}</p>
+                    <p className="text-xs text-gray-500 italic border-l-2 border-gray-300 pl-2 mt-2">
+                        Update: "{f.update_message}"
+                    </p>
+                </div>
+            ))}
+        </div>
+    );
+};
 
 const WardSummaryCard = ({ wardId }) => {
     const [summary, setSummary] = useState(null);
@@ -296,9 +341,21 @@ const WardOfficerDashboard = () => {
                                     </div>
                                 )}
                             </div>
+
                         </div>
                     )}
+
                 </div>
+
+                {/* Citizen Feedback Insights */}
+                <div className="lg:col-span-3 bg-white p-5 rounded-xl border border-gray-200">
+                    <h2 className="text-lg font-bold mb-4 flex items-center">
+                        <MessageCircle className="w-5 h-5 mr-2 text-blue-600" />
+                        Citizen Feedback Insights
+                    </h2>
+                    <WardFeedback wardId={user?.ward_id} />
+                </div>
+
             </div>
         </div>
     );
