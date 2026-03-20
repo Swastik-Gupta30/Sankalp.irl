@@ -46,10 +46,13 @@ def process_agent_chat(executor, request: ChatRequest) -> ChatResponse:
         # thread_id ensures the memory checkpointer retrieves the last 5 messages for this user
         config = {"configurable": {"thread_id": request.user_id}}
         
+        context_str = f"The authenticated user_id logging this request is {request.user_id}."
+        enhanced_msg = f"[System Context: {context_str} Do not ask the user for their ID, just use this.]\n\n{request.message}"
+
         # Invoke the robust LangGraph react agent
         # It will autonomously decide whether to use tools or just respond
         result = executor.invoke(
-            {"messages": [("user", request.message)]},
+            {"messages": [("user", enhanced_msg)]},
             config=config
         )
         
