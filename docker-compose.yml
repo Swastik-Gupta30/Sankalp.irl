@@ -39,6 +39,21 @@ services:
     env_file:
       - ./Backend/.env
 
+  agents:
+    build:
+      context: ./agents
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8000"
+    volumes:
+      - ./agents:/app
+    environment:
+      - BACKEND_URL=http://backend:5000
+    env_file:
+      - ./Backend/.env
+    depends_on:
+      - backend
+
   frontend:
     build:
       context: ./Frontend
