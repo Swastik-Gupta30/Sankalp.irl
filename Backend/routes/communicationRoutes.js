@@ -75,6 +75,25 @@ router.get('/my-notifications', authenticateToken, async (req, res) => {
 });
 
 /**
+ * POST /communication/generate/citizen-help
+ * Proxies request to LokSahayak AI Assistant
+ */
+router.post('/generate/citizen-help', optionalAuthenticateToken, async (req, res) => {
+    try {
+        const { user_query } = req.body;
+        if (!user_query) {
+            return res.status(400).json({ message: 'Query is required' });
+        }
+
+        const aiResponse = await axios.post(`${COMM_AI_URL}/generate/citizen-help`, { user_query }, { timeout: 30000 });
+        res.json(aiResponse.data);
+    } catch (error) {
+        console.error('LokSahayak generation failed:', error.message);
+        res.status(500).json({ message: 'Failed to fetch help from LokSahayak' });
+    }
+});
+
+/**
  * POST /communication/ward-summary/:wardId
  * Generates a ward activity summary using AI
  */

@@ -68,12 +68,24 @@ class WardSummaryRequest(BaseModel):
     flagged: int
     reported: int
 
+class HelpdeskRequest(BaseModel):
+    user_query: str
 
 # ── Endpoints ───────────────────────────────────────────────────
 
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "communication-ai"}
+
+@app.post("/generate/citizen-help")
+async def citizen_help(req: HelpdeskRequest):
+    try:
+        from helpdesk_agent import get_helpdesk_response
+        message = get_helpdesk_response(user_query=req.user_query)
+        return {"message": message}
+    except Exception as e:
+        logger.error(f"Helpdesk generation failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/generate/status-update")
