@@ -1,3 +1,5 @@
+const ExcelJS = require('exceljs');
+const nodemailer = require('nodemailer');
 const db = require('../config/db');
 const geoService = require('../services/geoService');
 const axios = require('axios');
@@ -472,11 +474,156 @@ const getMyComplaints = async (req, res) => {
     }
 };
 
+const exportPendingWardsData = async (req, res) => {
+    try {
+        const city_id = req.user.city_id; // Assume admin has city_id
+
+        // Fetch pending/resolved complaints grouped by ward
+        const query = `
+            SELECT 
+                c.ward_id,
+                COUNT(*) FILTER (WHERE c.status = 'reported' OR c.status = 'assigned' OR c.status = 'in_progress') as active_count,
+                COUNT(*) FILTER (WHERE c.status = 'resolved' OR c.status = 'flagged_for_review') as pending_verification_count,
+                COUNT(*) FILTER (WHERE c.status = 'verified') as resolved_count,
+                ROUND(AVG(EXTRACT(EPOCH FROM (COALESCE(c.updated_at, CURRENT_TIMESTAMP) - c.created_at))/3600)::numeric, 2) as avg_resolution_hours
+            FROM complaints c
+            WHERE c.city_id = $1
+            GROUP BY c.ward_id
+            ORDER BY c.ward_id ASC
+        `;
+        
+        const result = await db.query(query, [city_id]);
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Ward Performance');
+
+        worksheet.columns = [
+            { header: 'Ward ID', key: 'ward_id', width: 10 },
+            { header: 'Active Issues', key: 'active_count', width: 15 },
+            { header: 'Pending Verification', key: 'pending_verification_count', width: 25 },
+            { header: 'Verified/Closed', key: 'resolved_count', width: 15 },
+            { header: 'Avg Resolution (Hrs)', key: 'avg_resolution_hours', width: 20 }
+        ];
+
+        result.rows.forEach(row => {
+            worksheet.addRow(row);
+        });
+
+        // Styling the header
+        worksheet.getRow(1).font = { bold: true };
+        worksheet.getRow(1).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FF1B3A6F' }
+        };
+        worksheet.getRow(1).font = { color: { argb: 'FFFFFFFF' }, bold: true };
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename=Ward_Analytics.xlsx');
+
+        await workbook.xlsx.write(res);
+        res.end();
+
+    } catch (error) {
+        console.error("Export Error:", error);
+        res.status(500).json({ message: 'Server error generating Excel report' });
+    }
+};
+
+const sendEmailReport = async (req, res) => {
+    try {
+        const { heatmapDataUrl, targetEmail } = req.body;
+        const city_id = req.user.city_id;
+        const admin_email = targetEmail || req.user.gov_email || 'admin@city.gov.in';
+
+        if (!heatmapDataUrl) {
+            return res.status(400).json({ message: 'Heatmap snapshot is required' });
+        }
+
+        // 1. Generate the Excel Workbook in memory
+        const query = `
+            SELECT 
+                c.ward_id,
+                COUNT(*) FILTER (WHERE c.status = 'reported' OR c.status = 'assigned' OR c.status = 'in_progress') as active_count,
+                COUNT(*) FILTER (WHERE c.status = 'resolved' OR c.status = 'flagged_for_review') as pending_verification_count,
+                COUNT(*) FILTER (WHERE c.status = 'verified') as resolved_count,
+                ROUND(AVG(EXTRACT(EPOCH FROM (COALESCE(c.updated_at, CURRENT_TIMESTAMP) - c.created_at))/3600)::numeric, 2) as avg_resolution_hours
+            FROM complaints c
+            WHERE c.city_id = $1
+            GROUP BY c.ward_id
+            ORDER BY c.ward_id ASC
+        `;
+        const result = await db.query(query, [city_id]);
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Ward Performance');
+        worksheet.columns = [
+            { header: 'Ward ID', key: 'ward_id', width: 10 },
+            { header: 'Active Issues', key: 'active_count', width: 15 },
+            { header: 'Pending Verification', key: 'pending_verification_count', width: 25 },
+            { header: 'Verified/Closed', key: 'resolved_count', width: 15 },
+            { header: 'Avg Resolution (Hrs)', key: 'avg_resolution_hours', width: 20 }
+        ];
+        result.rows.forEach(row => worksheet.addRow(row));
+        worksheet.getRow(1).font = { bold: true };
+
+        const excelBuffer = await workbook.xlsx.writeBuffer();
+
+        // 2. Prepare Email Transporter
+        // Note: Using standard Gmail SMTP (requires app password)
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
+            }
+        });
+
+        // 3. Extract base64 image data
+        const base64Image = heatmapDataUrl.split(';base64,').pop();
+
+        // 4. Send Email
+        const mailOptions = {
+            from: `"Sankalp Portal Admin" <${process.env.EMAIL_USER}>`,
+            to: admin_email,
+            subject: `Municipal Analytics Report - ${new Date().toLocaleDateString()}`,
+            text: `Please find attached the Ward Analytics Report and City Heatmap Snapshot for ${new Date().toLocaleDateString()}.`,
+            attachments: [
+                {
+                    filename: 'Ward_Analytics.xlsx',
+                    content: excelBuffer
+                },
+                {
+                    filename: 'City_Heatmap.png',
+                    content: base64Image,
+                    encoding: 'base64'
+                }
+            ]
+        };
+
+        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+            console.warn("EMAIL_USER or EMAIL_PASS not set. Email will not be sent.");
+            return res.status(500).json({ message: 'Email service not configured. Set EMAIL_USER/EMAIL_PASS in .env' });
+        }
+
+        await transporter.sendMail(mailOptions);
+        res.status(200).json({ message: 'Report sent successfully to your email!' });
+
+    } catch (error) {
+        console.error("Email Export Error:", error);
+        res.status(500).json({ message: 'Server error sending email report' });
+    }
+};
+
 module.exports = {
     createComplaint,
     getComplaintsByCity,
     getComplaintsByWard,
     updateComplaintStatus,
     verifyResolution,
-    getMyComplaints
+    getMyComplaints,
+    exportPendingWardsData,
+    sendEmailReport
 };
+
+
