@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Mic, MapPin, AlertCircle, CheckCircle, ThumbsUp, ThumbsDown, Award } from 'lucide-react';
+import { Camera, Mic, MapPin, AlertCircle, CheckCircle, ThumbsUp, ThumbsDown, Award, Square, Play, Trash2 } from 'lucide-react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import LocationPickerModal from '../components/LocationPickerModal';
@@ -20,6 +20,13 @@ const CitizenPortal = () => {
     const [activePolls, setActivePolls] = useState([]);
     const [leaderboard, setLeaderboard] = useState([]);
     const [credibilityScore, setCredibilityScore] = useState(50);
+
+    // Audio Recording States
+    const [isRecording, setIsRecording] = useState(false);
+    const [audioBlob, setAudioBlob] = useState(null);
+    const [recorder, setRecorder] = useState(null);
+    const [recordingTime, setRecordingTime] = useState(0);
+    const timerRef = React.useRef(null);
 
     // Enforce location picker
     useEffect(() => {
@@ -98,7 +105,55 @@ const CitizenPortal = () => {
     const handleAudioChange = (e) => {
         if (e.target.files && e.target.files[0]) {
             setAudioFile(e.target.files[0]);
+            setAudioBlob(null); // Clear recorded blob if a file is uploaded
         }
+    };
+
+    const startRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const newRecorder = new MediaRecorder(stream);
+            const chunks = [];
+
+            newRecorder.ondataavailable = (e) => chunks.push(e.data);
+            newRecorder.onstop = () => {
+                const blob = new Blob(chunks, { type: 'audio/webm' });
+                setAudioBlob(blob);
+                const file = new File([blob], `recorded-voice-${Date.now()}.webm`, { type: 'audio/webm' });
+                setAudioFile(file);
+            };
+
+            newRecorder.start();
+            setRecorder(newRecorder);
+            setIsRecording(true);
+            setRecordingTime(0);
+            timerRef.current = setInterval(() => {
+                setRecordingTime(prev => prev + 1);
+            }, 1000);
+        } catch (err) {
+            console.error("Error accessing microphone:", err);
+            alert("Microphone access denied.");
+        }
+    };
+
+    const stopRecording = () => {
+        if (recorder) {
+            recorder.stop();
+            recorder.stream.getTracks().forEach(track => track.stop());
+            setIsRecording(false);
+            clearInterval(timerRef.current);
+        }
+    };
+
+    const deleteRecording = () => {
+        setAudioBlob(null);
+        setAudioFile(null);
+    };
+
+    const formatTime = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
     const handleSubmit = async (e) => {
@@ -135,6 +190,7 @@ const CitizenPortal = () => {
             setComplaintText('');
             setImageFile(null);
             setAudioFile(null);
+            setAudioBlob(null);
 
             fetchComplaints();
 
@@ -254,13 +310,55 @@ const CitizenPortal = () => {
                             )}
                             <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
                         </label>
-                        <label className={`group flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl transition cursor-pointer ${audioFile ? 'border-amber-500 bg-amber-50' : 'border-[#E5E7EB] hover:border-[#FF7A00] hover:bg-[#FF9933]/5'}`}>
-                            <Mic className={`w-8 h-8 mb-2 transition ${audioFile ? 'text-amber-500' : 'text-[#9CA3AF] group-hover:text-[#FF7A00]'}`} />
-                            <span className={`text-sm font-medium transition text-center ${audioFile ? 'text-amber-600' : 'text-[#6B7280] group-hover:text-[#FF7A00]'}`}>
-                                {audioFile ? audioFile.name : 'Upload Voice Note'}
-                            </span>
-                            <input type="file" className="hidden" accept="audio/*" onChange={handleAudioChange} />
-                        </label>
+                        <div className={`group flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl transition relative ${audioFile ? 'border-amber-500 bg-amber-50' : 'border-[#E5E7EB] hover:border-[#FF7A00] hover:bg-[#FF9933]/5'}`}>
+                            {isRecording ? (
+                                <div className="flex flex-col items-center space-y-2">
+                                    <div className="flex items-center space-x-2">
+                                        <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                                        <span className="text-sm font-bold text-red-600">{formatTime(recordingTime)}</span>
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        onClick={stopRecording} 
+                                        className="p-3 bg-red-100 text-red-500 rounded-full hover:bg-red-200 transition"
+                                    >
+                                        <Square className="w-5 h-5 fill-current" />
+                                    </button>
+                                    <span className="text-[10px] font-bold text-red-500 uppercase">Recording...</span>
+                                </div>
+                            ) : audioFile ? (
+                                <div className="flex flex-col items-center w-full px-2">
+                                    <div className="flex items-center justify-between w-full mb-2">
+                                        <span className="text-xs font-bold text-amber-600 truncate max-w-[100px]">{audioFile.name}</span>
+                                        <button type="button" onClick={deleteRecording} className="text-red-500 hover:text-red-700">
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                    {audioBlob && (
+                                        <audio src={URL.createObjectURL(audioBlob)} controls className="w-full h-8" />
+                                    )}
+                                    <span className="text-[10px] font-bold text-amber-500 mt-2 uppercase">Audio Ready</span>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="flex space-x-4 mb-2">
+                                        <button 
+                                            type="button" 
+                                            onClick={startRecording} 
+                                            className="p-3 bg-[#FF9933]/10 text-[#FF7A00] rounded-full hover:bg-[#FF9933]/20 transition border border-[#FF9933]/20"
+                                            title="Record Voice Note"
+                                        >
+                                            <Mic className="w-5 h-5" />
+                                        </button>
+                                        <label className="p-3 bg-[#1B3A6F]/10 text-[#1B3A6F] rounded-full hover:bg-[#1B3A6F]/20 transition border border-[#1B3A6F]/20 cursor-pointer" title="Upload Audio File">
+                                            <Play className="w-5 h-5 rotate-90" />
+                                            <input type="file" className="hidden" accept="audio/*" onChange={handleAudioChange} />
+                                        </label>
+                                    </div>
+                                    <span className="text-xs font-medium text-[#6B7280] text-center">Record or Upload Audio</span>
+                                </>
+                            )}
+                        </div>
                     </div>
 
                     <div className="relative">
