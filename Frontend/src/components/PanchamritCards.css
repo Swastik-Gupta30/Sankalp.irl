@@ -1,0 +1,240 @@
+/* ═══════════════════════════════════════════════════════════════
+   PanchamritCards.css — Green gradient GSAP feature cards
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── SECTION WRAPPER ── */
+.panchamrit-section {
+  padding: 100px clamp(20px, 6vw, 80px) 120px;
+  background: linear-gradient(170deg, #FAFAF8 0%, #F4EDE4 35%, #FAF3EC 65%, #FAFAF8 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.panchamrit-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 40%, rgba(255,240,225,0.55) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 50% at 80% 20%, rgba(255,107,53,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 15% 80%, rgba(200,168,75,0.06) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── HEADER ── */
+.panchamrit-header {
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto 72px;
+  position: relative;
+  z-index: 1;
+}
+
+.panchamrit-overline {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #c2410c;
+  background: rgba(255,107,53,0.10);
+  border: 1px solid rgba(255,107,53,0.25);
+  padding: 6px 18px;
+  border-radius: 100px;
+  margin-bottom: 20px;
+}
+
+.panchamrit-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(32px, 4.5vw, 52px);
+  font-weight: 400;
+  line-height: 1.15;
+  color: #1B1B1F;
+  margin: 0 0 16px;
+  letter-spacing: -0.02em;
+}
+
+.panchamrit-title em {
+  font-style: italic;
+  color: #FF6B35;
+}
+
+.panchamrit-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 1.8;
+  color: #6B6B73;
+  margin: 0;
+}
+
+/* ── CARDS GRID ── */
+.panchamrit-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── INDIVIDUAL CARD ── */
+.panchamrit-card {
+  position: relative;
+  border-radius: 24px;
+  padding: 36px 28px 32px;
+  cursor: default;
+  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1),
+              box-shadow 0.4s ease;
+  will-change: transform;
+  overflow: hidden;
+
+  /* initial hidden for GSAP */
+  opacity: 0;
+  transform: translateY(60px);
+}
+
+/* Green gradient variants per card */
+.panchamrit-card:nth-child(1) {
+  background: linear-gradient(145deg, #ffffff 0%, #fff7f3 60%, #ffeee6 100%);
+  border: 1px solid rgba(255,107,53,0.18);
+  box-shadow: 0 8px 32px rgba(255,107,53,0.08), 0 2px 8px rgba(0,0,0,0.04);
+}
+.panchamrit-card:nth-child(2) {
+  background: linear-gradient(145deg, #fff7f3 0%, #ffeee6 60%, #ffe4d6 100%);
+  border: 1px solid rgba(255,107,53,0.22);
+  box-shadow: 0 8px 32px rgba(255,107,53,0.10), 0 2px 8px rgba(0,0,0,0.04);
+}
+.panchamrit-card:nth-child(3) {
+  background: linear-gradient(145deg, #ffeee6 0%, #ffe4d6 60%, #ffd5c0 100%);
+  border: 1px solid rgba(255,107,53,0.28);
+  box-shadow: 0 8px 32px rgba(255,107,53,0.13), 0 2px 8px rgba(0,0,0,0.05);
+}
+.panchamrit-card:nth-child(4) {
+  background: linear-gradient(145deg, #fff7f3 0%, #ffeee6 60%, #ffe4d6 100%);
+  border: 1px solid rgba(255,107,53,0.22);
+  box-shadow: 0 8px 32px rgba(255,107,53,0.10), 0 2px 8px rgba(0,0,0,0.04);
+}
+.panchamrit-card:nth-child(5) {
+  background: linear-gradient(145deg, #ffffff 0%, #fff7f3 60%, #ffeee6 100%);
+  border: 1px solid rgba(255,107,53,0.18);
+  box-shadow: 0 8px 32px rgba(255,107,53,0.08), 0 2px 8px rgba(0,0,0,0.04);
+}
+
+/* Hover lift */
+.panchamrit-card:hover {
+  transform: translateY(-10px) scale(1.02) !important;
+  box-shadow: 0 24px 56px rgba(255,107,53,0.20), 0 8px 24px rgba(255,107,53,0.10) !important;
+}
+
+/* Inner shimmer overlay */
+.panchamrit-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.45) 0%, transparent 60%);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* ── CARD NUMBER ── */
+.pc-number {
+  font-family: 'DM Serif Display', serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(21,128,61,0.5);
+  margin-bottom: 16px;
+}
+
+/* ── CARD ICON ── */
+.pc-icon {
+  font-size: 36px;
+  line-height: 1;
+  margin-bottom: 18px;
+  display: block;
+  filter: drop-shadow(0 2px 6px rgba(21,128,61,0.25));
+}
+
+/* ── CARD NAME (Hindi title) ── */
+.pc-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: #1B1B1F;
+  margin: 0 0 4px;
+  line-height: 1.2;
+}
+
+/* ── CARD SUBTITLE (English) ── */
+.pc-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #FF6B35;
+  margin: 0 0 16px;
+}
+
+/* ── DIVIDER ── */
+.pc-divider {
+  width: 36px;
+  height: 2px;
+  background: linear-gradient(90deg, #FF6B35, #C8A84B);
+  border-radius: 2px;
+  margin: 0 0 16px;
+}
+
+/* ── CARD DESC ── */
+.pc-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  line-height: 1.75;
+  color: #4A4A50;
+  margin: 0;
+}
+
+/* ── CARD FOOTER TAG ── */
+.pc-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 20px;
+  font-family: 'Inter', sans-serif;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c2410c;
+  background: rgba(255,107,53,0.10);
+  border: 1px solid rgba(255,107,53,0.22);
+  padding: 5px 12px;
+  border-radius: 100px;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1100px) {
+  .panchamrit-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .panchamrit-card:nth-child(4),
+  .panchamrit-card:nth-child(5) {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 720px) {
+  .panchamrit-section {
+    padding: 70px 20px 80px;
+  }
+  .panchamrit-grid {
+    grid-template-columns: 1fr;
+    max-width: 440px;
+  }
+}
