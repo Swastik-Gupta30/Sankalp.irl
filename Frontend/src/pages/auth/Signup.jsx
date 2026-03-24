@@ -148,10 +148,10 @@ const Signup = () => {
                                     <select required value={civicBodyId}
                                         onChange={(e) => setCivicBodyId(Number(e.target.value))} className={inputClass}>
                                         <option value={1}>Public Works Department (PWD)</option>
-                                        <option value={2}>Water Supply & Sanitation</option>
-                                        <option value={3}>Electricity Board</option>
-                                        <option value={4}>Solid Waste Management</option>
-                                        <option value={5}>Parks & Gardens</option>
+                                        <option value={2}>Water Works Department</option>
+                                        <option value={3}>Sanitation Department</option>
+                                        <option value={4}>Electricity Department</option>
+                                        <option value={5}>Urban Planning Authority</option>
                                     </select>
                                 </div>
                             </>

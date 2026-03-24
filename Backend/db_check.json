@@ -1,0 +1,272 @@
+{
+  "staff_error": "column \"role\" does not exist",
+  "civic_bodies": [
+    {
+      "id": 1,
+      "name": "Public Works Department (PWD)"
+    },
+    {
+      "id": 2,
+      "name": "Water Works Department"
+    },
+    {
+      "id": 3,
+      "name": "Sanitation Department"
+    },
+    {
+      "id": 4,
+      "name": "Electricity Department"
+    },
+    {
+      "id": 5,
+      "name": "Urban Planning Authority"
+    }
+  ],
+  "complaints": [
+    {
+      "id": 71,
+      "user_id": 2,
+      "city_id": 2,
+      "ward_id": 30,
+      "civic_body_id": 4,
+      "text_input": "pole issue near my colony",
+      "audio_url": null,
+      "image_url": "https://xquxcptcglzuwwnxfvho.supabase.co/storage/v1/object/public/complaints/complaint-1774356658202-images%20(1).jpg",
+      "after_image_url": null,
+      "issue_type": "electric pole damage",
+      "priority_score": 20.87,
+      "latitude": "28.75152697",
+      "longitude": "77.28007015",
+      "status": "reported",
+      "ai_feedback": null,
+      "created_at": "2026-03-24T12:50:59.203Z",
+      "updated_at": "2026-03-24T12:50:59.203Z",
+      "impact_score": 0,
+      "recurrence_score": 0
+    },
+    {
+      "id": 70,
+      "user_id": 2,
+      "city_id": 2,
+      "ward_id": 35,
+      "civic_body_id": 4,
+      "text_input": "pole issue",
+      "audio_url": null,
+      "image_url": "https://xquxcptcglzuwwnxfvho.supabase.co/storage/v1/object/public/complaints/complaint-1774356266430-images%20(1).jpg",
+      "after_image_url": null,
+      "issue_type": "electric pole damage",
+      "priority_score": 25.15,
+      "latitude": "28.87041273",
+      "longitude": "77.15095171",
+      "status": "reported",
+      "ai_feedback": null,
+      "created_at": "2026-03-24T12:44:29.393Z",
+      "updated_at": "2026-03-24T12:44:29.393Z",
+      "impact_score": 6.02,
+      "recurrence_score": 5
+    },
+    {
+      "id": 69,
+      "user_id": 2,
+      "city_id": 2,
+      "ward_id": 35,
+      "civic_body_id": 4,
+      "text_input": "pole issue ",
+      "audio_url": null,
+      "image_url": "https://xquxcptcglzuwwnxfvho.supabase.co/storage/v1/object/public/complaints/complaint-1774356084406-electric%20issue.jpeg",
+      "after_image_url": null,
+      "issue_type": "electric pole damage",
+      "priority_score": 22.68,
+      "latitude": "28.87041273",
+      "longitude": "77.15095171",
+      "status": "reported",
+      "ai_feedback": null,
+      "created_at": "2026-03-24T12:41:28.294Z",
+      "updated_at": "2026-03-24T12:41:28.294Z",
+      "impact_score": 0,
+      "recurrence_score": 0
+    },
+    {
+      "id": 68,
+      "user_id": 2,
+      "city_id": 2,
+      "ward_id": 23,
+      "civic_body_id": 4,
+      "text_input": "biggg issur",
+      "audio_url": null,
+      "image_url": "https://xquxcptcglzuwwnxfvho.supabase.co/storage/v1/object/public/complaints/complaint-1774355753985-electric%20issue.jpeg",
+      "after_image_url": "https://xquxcptcglzuwwnxfvho.supabase.co/storage/v1/object/public/complaints/resolution-68-1774355802528-electric%20issue.jpeg",
+      "issue_type": "electric pole damage",
+      "priority_score": 28.71,
+      "latitude": "28.69203327",
+      "longitude": "77.19105084",
+      "status": "flagged_for_review",
+      "ai_feedback": "No issue detected in the images",
+      "created_at": "2026-03-24T12:35:56.970Z",
+      "updated_at": "2026-03-24T12:36:42.626Z",
+      "impact_score": 9.54,
+      "recurrence_score": 15
+    },
+    {
+      "id": 67,
+      "user_id": 2,
+      "city_id": 2,
+      "ward_id": 23,
+      "civic_body_id": 3,
+      "text_input": "garbage pile accumalated , help!!!!!\r\n",
+      "audio_url": null,
+      "image_url": null,
+      "after_image_url": null,
+      "issue_type": "trash pile",
+      "priority_score": 23.98,
+      "latitude": "28.69203327",
+      "longitude": "77.19105084",
+      "status": "reported",
+      "ai_feedback": null,
+      "created_at": "2026-03-24T12:25:54.403Z",
+      "updated_at": "2026-03-24T12:25:54.403Z",
+      "impact_score": 6.02,
+      "recurrence_score": 5
+    }
+  ],
+  "user_columns": [
+    {
+      "column_name": "id"
+    },
+    {
+      "column_name": "email"
+    },
+    {
+      "column_name": "password_hash"
+    },
+    {
+      "column_name": "trust_score"
+    },
+    {
+      "column_name": "created_at"
+    },
+    {
+      "column_name": "latitude"
+    },
+    {
+      "column_name": "longitude"
+    },
+    {
+      "column_name": "ward_id"
+    },
+    {
+      "column_name": "credibility_score"
+    },
+    {
+      "column_name": "credibility_votes_total"
+    },
+    {
+      "column_name": "credibility_votes_correct"
+    },
+    {
+      "column_name": "instance_id"
+    },
+    {
+      "column_name": "id"
+    },
+    {
+      "column_name": "aud"
+    },
+    {
+      "column_name": "role"
+    },
+    {
+      "column_name": "email"
+    },
+    {
+      "column_name": "encrypted_password"
+    },
+    {
+      "column_name": "email_confirmed_at"
+    },
+    {
+      "column_name": "invited_at"
+    },
+    {
+      "column_name": "confirmation_token"
+    },
+    {
+      "column_name": "confirmation_sent_at"
+    },
+    {
+      "column_name": "recovery_token"
+    },
+    {
+      "column_name": "recovery_sent_at"
+    },
+    {
+      "column_name": "email_change_token_new"
+    },
+    {
+      "column_name": "email_change"
+    },
+    {
+      "column_name": "email_change_sent_at"
+    },
+    {
+      "column_name": "last_sign_in_at"
+    },
+    {
+      "column_name": "raw_app_meta_data"
+    },
+    {
+      "column_name": "raw_user_meta_data"
+    },
+    {
+      "column_name": "is_super_admin"
+    },
+    {
+      "column_name": "created_at"
+    },
+    {
+      "column_name": "updated_at"
+    },
+    {
+      "column_name": "phone"
+    },
+    {
+      "column_name": "phone_confirmed_at"
+    },
+    {
+      "column_name": "phone_change"
+    },
+    {
+      "column_name": "phone_change_token"
+    },
+    {
+      "column_name": "phone_change_sent_at"
+    },
+    {
+      "column_name": "confirmed_at"
+    },
+    {
+      "column_name": "email_change_token_current"
+    },
+    {
+      "column_name": "email_change_confirm_status"
+    },
+    {
+      "column_name": "banned_until"
+    },
+    {
+      "column_name": "reauthentication_token"
+    },
+    {
+      "column_name": "reauthentication_sent_at"
+    },
+    {
+      "column_name": "is_sso_user"
+    },
+    {
+      "column_name": "deleted_at"
+    },
+    {
+      "column_name": "is_anonymous"
+    }
+  ]
+}
