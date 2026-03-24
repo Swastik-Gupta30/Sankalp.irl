@@ -92,20 +92,24 @@ const calculatePriority = async (issue_type, ward_id) => {
         const count7d = parseInt(recurrenceRes.rows[0].count, 10) || 0;
         const recurrence_score = Math.min(count7d * 5, 30);
 
-        // 4. Final priority score (0-100)
-        let priority_score = (0.5 * urgency_score) + (0.3 * impact_score) + (0.2 * recurrence_score);
-        priority_score = Math.min(Math.round(priority_score * 10) / 10, 100);
+        // 4. Add a random variation factor so identical complaints don't stack with the exact same score
+        let random_factor = Math.random() * 4; // Add a random value between 0 and 4
+
+        // 5. Final priority score (0-100)
+        let priority_score = (0.5 * urgency_score) + (0.3 * impact_score) + (0.2 * recurrence_score) + random_factor;
+        priority_score = Math.min(Math.round(priority_score * 100) / 100, 100);
 
         return {
             priority_score,
             urgency_score,
-            impact_score: Math.round(impact_score * 10) / 10,
+            impact_score: Math.round(impact_score * 100) / 100,
             recurrence_score
         };
     } catch (error) {
         console.error('Error calculating priority score:', error);
+        let random_fallback = Math.random() * 4;
         return {
-            priority_score: DEFAULT_URGENCY_WEIGHT * 0.5,
+            priority_score: Math.min(Math.round(((DEFAULT_URGENCY_WEIGHT * 0.5) + random_fallback) * 100) / 100, 100),
             urgency_score: DEFAULT_URGENCY_WEIGHT,
             impact_score: 0,
             recurrence_score: 0
