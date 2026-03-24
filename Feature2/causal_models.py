@@ -17,7 +17,7 @@ def safe_proba_positive(model, input_data):
     """
     proba = model.predict_proba(input_data)
     if proba.shape[1] == 1:
-        # Single column: treat as all-ones or all-zeros depending on mean.
+       
         return np.ones(len(input_data)) if proba[:, 0].mean() > 0.5 else np.zeros(len(input_data))
     else:
         return proba[:, 1]
