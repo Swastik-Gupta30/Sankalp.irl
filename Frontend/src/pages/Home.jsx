@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import HeroSection from '../components/HeroSection';
 import IndiaMap from '../components/IndiaMap';
 import GlassCards from '../components/GlassCards';
+import PanchamritCards from '../components/PanchamritCards';
 
 /* ── Scroll reveal hook ── */
 function useReveal(threshold = 0.12) {
@@ -47,6 +48,9 @@ const Home = () => {
             {/* ── HERO SECTION ── */}
             <HeroSection heroRef={heroRef} heroVis={heroVis} scrollY={scrollY} />
 
+            {/* ── PANCHAMRIT FEATURE CARDS ── */}
+            <PanchamritCards />
+
             {/* ── MAP SECTION ── */}
             <div
                 className={`map-section ${mapSecVis ? "visible" : ""}`}
@@ -54,9 +58,9 @@ const Home = () => {
                 ref={mapSecRef}
             >
                 <div className="section-header">
-                    <p className="section-overline">Interactive Accountability Hub</p>
-                    <h2 className="section-title">LokAyukt Accountability Network</h2>
-                    <p className="section-desc">Real-time civic data and grievance metrics across the nation. Click on any state to view regional performance and ward-level updates.</p>
+                    <p className="section-overline">LokAyukt Interactive Hub</p>
+                    <h2 className="section-title">Bharat Gaurav Yatra</h2>
+                    <p className="section-desc">Know the Indian states better. Click on any state to explore its culture, heritage and governance!</p>
                 </div>
                 
                 <IndiaMap />

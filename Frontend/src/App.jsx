@@ -31,42 +31,55 @@ const Navigation = () => {
   };
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-[200] flex items-center justify-between px-6 md:px-14 h-16 transition-all duration-400 ${scrolled ? 'bg-white/85 backdrop-blur-xl border-b border-black/5 shadow-sm' : 'bg-transparent'}`}>
-      <div className="flex items-center gap-3">
-        <Link to="/" className="flex items-center gap-3 no-underline">
-          <img src="/logo.jpeg" alt="LokAyukt Logo" className="w-8 h-8 object-contain shadow-sm" />
-          <span className="font-serif text-base font-semibold text-[#1B1B1F] tracking-tight">LokAyukt</span>
+    <nav className="fixed top-0 left-0 right-0 z-[200] flex items-center justify-between px-6 md:px-14 transition-all duration-400"
+      style={{ height: '72px', background: 'linear-gradient(135deg, #0B1D51 0%, #1A3A8F 50%, #0B1D51 100%)', boxShadow: '0 2px 24px rgba(11,29,81,0.55)' }}
+    >
+      <div className="flex items-center gap-4">
+        <Link to="/" className="flex items-center gap-4 no-underline">
+          <div style={{ width: '48px', height: '48px', borderRadius: '50%', padding: '2px', background: 'linear-gradient(135deg, rgba(255,255,255,0.6), rgba(100,149,255,0.4))', boxShadow: '0 0 16px rgba(100,149,255,0.5)' }}>
+            <img src="/logo.jpeg" alt="LokAyukt Logo" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%', display: 'block' }} />
+          </div>
+          <span style={{ fontFamily: 'Georgia, serif', fontSize: '22px', fontWeight: '700', letterSpacing: '-0.3px', background: 'linear-gradient(to right, #ffffff, #a8c4ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>LokAyukt</span>
         </Link>
       </div>
 
-      <div className="hidden lg:flex items-center gap-8">
-        <ul className="flex gap-8 list-none p-0 m-0">
-          <li><Link to="/" className="text-[13px] font-medium tracking-wider text-[#6B6B73] hover:text-[#1B1B1F] transition-colors uppercase no-underline relative group py-1">Home<span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF6B35] scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span></Link></li>
-          <li><Link to="/public-feed" className="text-[13px] font-medium tracking-wider text-[#6B6B73] hover:text-[#1B1B1F] transition-colors uppercase no-underline relative group py-1">Feed<span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF6B35] scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span></Link></li>
-          <li><Link to="/loksahayak" className="text-[13px] font-bold tracking-wider text-[#FF6B35] hover:opacity-80 transition-opacity uppercase no-underline flex items-center gap-1">LokSahayak</Link></li>
-          <li><Link to="/news-verification" className="text-[13px] font-bold tracking-wider text-[#138808] hover:opacity-80 transition-opacity uppercase no-underline flex items-center gap-1">Verify</Link></li>
-          
+      <div className="hidden lg:flex items-center gap-6">
+        <ul className="flex gap-6 list-none p-0 m-0 items-center">
+          <li><Link to="/" className="text-[13px] font-medium tracking-wider text-blue-200 hover:text-white transition-colors uppercase no-underline relative group py-1">Home<span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-300 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span></Link></li>
+
           {isAuthenticated && (
             <>
               {user?.role === 'user' && (
-                <li><Link to="/citizen" className="text-[13px] font-medium tracking-wider text-[#6B6B73] hover:text-[#1B1B1F] transition-colors uppercase no-underline relative group py-1">Citizen<span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF6B35] scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span></Link></li>
+                <li><Link to="/citizen" className="text-[13px] font-medium tracking-wider text-blue-200 hover:text-white transition-colors uppercase no-underline relative group py-1">Citizen<span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-300 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span></Link></li>
               )}
               {user?.role === 'ward_staff' && (
-                <li><Link to="/ward-officer" className="text-[13px] font-medium tracking-wider text-[#6B6B73] hover:text-[#1B1B1F] transition-colors uppercase no-underline relative group py-1">Officer<span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF6B35] scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span></Link></li>
+                <li><Link to="/ward-officer" className="text-[13px] font-medium tracking-wider text-blue-200 hover:text-white transition-colors uppercase no-underline relative group py-1">Officer<span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-300 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span></Link></li>
               )}
               {user?.role === 'admin' && (
-                <li><Link to="/admin" className="text-[13px] font-medium tracking-wider text-[#6B6B73] hover:text-[#1B1B1F] transition-colors uppercase no-underline relative group py-1">Admin<span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF6B35] scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span></Link></li>
+                <li><Link to="/admin" className="text-[13px] font-medium tracking-wider text-blue-200 hover:text-white transition-colors uppercase no-underline relative group py-1">Admin<span className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-300 scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span></Link></li>
               )}
             </>
           )}
         </ul>
 
         {isAuthenticated ? (
-          <button onClick={handleLogout} className="text-[12px] font-semibold tracking-wider text-red-500 hover:bg-red-50 px-4 py-2 rounded-full transition-all uppercase">Logout</button>
+          <button onClick={handleLogout}
+            className="text-[12px] font-semibold tracking-wider text-white uppercase px-5 py-2 rounded-full border border-red-400/50 hover:bg-red-500/20 transition-all"
+          >Logout</button>
         ) : (
-          <div className="flex items-center gap-4">
-            <Link to="/login" className="text-[13px] font-bold text-[#1B1B1F] hover:opacity-70 transition-opacity uppercase no-underline">Sign In</Link>
-            <Link to="/signup" className="bg-[#1B1B1F] text-white text-[12px] font-bold px-6 py-2 rounded-full hover:bg-[#FF6B35] transition-all shadow-md uppercase no-underline">Join Now</Link>
+          <div className="flex items-center gap-3">
+            <Link to="/login"
+              className="text-[12px] font-bold text-white uppercase no-underline px-5 py-2 rounded-full"
+              style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)' }}
+              onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.22)'}
+              onMouseLeave={e => e.currentTarget.style.background='rgba(255,255,255,0.12)'}
+            >Sign In</Link>
+            <Link to="/signup"
+              className="text-[12px] font-bold text-white uppercase no-underline px-5 py-2 rounded-full transition-all"
+              style={{ background: 'linear-gradient(135deg, #0B2A7A 0%, #0D3AA8 100%)', border: '1px solid rgba(100,149,255,0.4)', boxShadow: '0 0 12px rgba(29,78,216,0.4)' }}
+              onMouseEnter={e => e.currentTarget.style.boxShadow='0 0 20px rgba(29,78,216,0.7)'}
+              onMouseLeave={e => e.currentTarget.style.boxShadow='0 0 12px rgba(29,78,216,0.4)'}
+            >Join Now</Link>
           </div>
         )}
       </div>
@@ -81,7 +94,7 @@ function App() {
         <div className="min-h-screen bg-[#FAFAF8] flex flex-col font-sans">
           <Navigation />
 
-          <main className="flex-1 w-full flex flex-col pt-16">
+          <main className="flex-1 w-full flex flex-col" style={{ paddingTop: '72px' }}>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/public-feed" element={<PublicFeed />} />

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import "./HeroSection.css";
 
 /* ── Animated counter hook ── */
@@ -47,101 +47,22 @@ const TITLE_WORDS_LINE2 = [
 ];
 
 /* ═══════════════════════════════════════════
-   HeroSection — Premium glassmorphism hero
+   HeroSection — Clean hero, no floating cards
    ═══════════════════════════════════════════ */
 export default function HeroSection({ heroRef, heroVis, scrollY }) {
-  /* After entry animations complete, switch glass cards to floating loop */
-  const [cardsFloating, setCardsFloating] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setCardsFloating(true), 2000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  /* Parallax factors */
-  const pxContent = scrollY * 0.15;
-  const pxCardL   = scrollY * 0.08;
-  const pxCardR   = scrollY * 0.12;
+  const pxContent = scrollY * 0.12;
   const pxOrb     = scrollY * 0.05;
   const scrolledPast = scrollY > 100;
 
   return (
     <section className="hero" ref={heroRef}>
       {/* ── Background orbs (parallax) ── */}
-      <div
-        className="hero-bg-orb hero-bg-orb--warm"
-        style={{ transform: `translate(0, ${pxOrb}px)` }}
-      />
-      <div
-        className="hero-bg-orb hero-bg-orb--green"
-        style={{ transform: `translate(0, ${-pxOrb}px)` }}
-      />
-      <div
-        className="hero-bg-orb hero-bg-orb--gold"
-        style={{ transform: `translateX(-50%) translateY(${pxOrb * 0.5}px)` }}
-      />
-
-      {/* ── Floating Glass Card — Left ── */}
-      <div
-        className={`hero-glass-card hero-glass-card--left${cardsFloating ? " floating" : ""}`}
-        style={cardsFloating ? undefined : { transform: `translateY(${-pxCardL}px)` }}
-      >
-        <div className="hero-glass-card-icon">🏛️</div>
-        <div className="hero-glass-card-title">Accountable Governance</div>
-        <div className="hero-glass-card-desc">
-          Direct connection between citizens and municipal authorities for rapid resolution.
-        </div>
-        <ul className="hero-glass-card-list">
-          <li>📢 Real-time grievance tracking</li>
-          <li>🛡️ Verified ground-truth checks</li>
-          <li>✅ Transparent officer accountability</li>
-        </ul>
-        <div className="hero-glass-card-stat">
-          <span className="hero-glass-card-stat-num">98%</span>
-          <span className="hero-glass-card-stat-label">Resolution Rate</span>
-        </div>
-      </div>
-
-      {/* ── Floating Glass Card — Right ── */}
-      <div
-        className={`hero-glass-card hero-glass-card--right${cardsFloating ? " floating" : ""}`}
-        style={cardsFloating ? undefined : { transform: `translateY(${-pxCardR}px)` }}
-      >
-        <div className="hero-glass-card-icon">📊</div>
-        <div className="hero-glass-card-title">City Heatmap Analytics</div>
-        <div className="hero-glass-card-desc">
-          AI-powered spatial insights to identify and eliminate civic bottlenecks.
-        </div>
-        <ul className="hero-glass-card-list">
-          <li>📍 Spatial issue clustering</li>
-          <li>📈 Predictive ward analytics</li>
-          <li>🎯 Targeted resource allocation</li>
-        </ul>
-        <div className="hero-glass-card-stat">
-          <span className="hero-glass-card-stat-num">24/7</span>
-          <span className="hero-glass-card-stat-label">Active Monitoring</span>
-        </div>
-      </div>
-
-      {/* ── Floating Micro-Badges — decorative pills ── */}
-      <div className="hero-micro-badge hero-micro-badge--1" style={cardsFloating ? undefined : { transform: `translateY(${-pxOrb * 1.5}px)` }}>
-        🤖 <span>AI Verification</span>
-      </div>
-      <div className="hero-micro-badge hero-micro-badge--2" style={cardsFloating ? undefined : { transform: `translateY(${-pxOrb * 2}px)` }}>
-        🏙️ <span>Ward Lead</span>
-      </div>
-      <div className="hero-micro-badge hero-micro-badge--3" style={cardsFloating ? undefined : { transform: `translateY(${-pxOrb}px)` }}>
-        🔒 <span>Encrypted Tracking</span>
-      </div>
-      <div className="hero-micro-badge hero-micro-badge--4" style={cardsFloating ? undefined : { transform: `translateY(${-pxOrb * 1.2}px)` }}>
-        🌍 <span>Citizen-Led</span>
-      </div>
+      <div className="hero-bg-orb hero-bg-orb--warm"  style={{ transform: `translate(0, ${pxOrb}px)` }} />
+      <div className="hero-bg-orb hero-bg-orb--green" style={{ transform: `translate(0, ${-pxOrb}px)` }} />
+      <div className="hero-bg-orb hero-bg-orb--gold"  style={{ transform: `translateX(-50%) translateY(${pxOrb * 0.5}px)` }} />
 
       {/* ── Hero Content ── */}
-      <div
-        className="hero-content"
-        style={{ transform: `translateY(${-pxContent}px)` }}
-      >
+      <div className="hero-content" style={{ transform: `translateY(${-pxContent}px)` }}>
         {/* Glass badge */}
         <div className="hero-glass-badge">
           <img src="/logo.jpeg" alt="Logo" className="w-4 h-4 object-contain" />
@@ -155,11 +76,7 @@ export default function HeroSection({ heroRef, heroVis, scrollY }) {
               w.space ? (
                 <span key={i}>&nbsp;</span>
               ) : (
-                <span
-                  key={i}
-                  className={w.className}
-                  style={{ animationDelay: `${w.delay}s` }}
-                >
+                <span key={i} className={w.className} style={{ animationDelay: `${w.delay}s` }}>
                   {w.text}
                 </span>
               )
@@ -167,11 +84,7 @@ export default function HeroSection({ heroRef, heroVis, scrollY }) {
           </span>
           <span className="hero-title-line">
             {TITLE_WORDS_LINE2.map((w, i) => (
-              <span
-                key={i}
-                className={w.className}
-                style={{ animationDelay: `${w.delay}s` }}
-              >
+              <span key={i} className={w.className} style={{ animationDelay: `${w.delay}s` }}>
                 {w.text}
               </span>
             ))}
@@ -180,7 +93,7 @@ export default function HeroSection({ heroRef, heroVis, scrollY }) {
 
         {/* Subtitle */}
         <p className="hero-sub">
-          A next-generation AI governance platform bridging the gap between citizens and authorities. 
+          A next-generation AI governance platform bridging the gap between citizens and authorities.{' '}
           Report, verify, and resolve — ensuring Every Voice counts.
         </p>
 
@@ -191,18 +104,51 @@ export default function HeroSection({ heroRef, heroVis, scrollY }) {
           <div className="hero-line" />
         </div>
 
-        {/* Premium CTA */}
-        <a href="/public-feed" className="hero-cta">
-          View Public Feed
-          <span className="hero-cta-arrow">→</span>
-        </a>
+        {/* ── Portal Glasscards ── */}
+        <div className="hero-portal-cards">
 
-        {/* Animated statistics */}
-        <div className="hero-stats">
-          <StatBlock num="150" label="Active Wards" delay={0} trigger={heroVis} />
-          <StatBlock num="12" label="Govt Departments" delay={100} trigger={heroVis} />
-          <StatBlock num="4.8" label="Trust Score" delay={200} trigger={heroVis} />
-          <StatBlock num="10" label="K+ Resolutions" delay={300} trigger={heroVis} />
+          {/* Lok-Sahayak */}
+          <a href="/loksahayak" className="hero-portal-card">
+            <div className="hero-portal-card-glow" style={{ background: 'rgba(255,107,53,0.15)' }} />
+            <div className="hero-portal-card-icon">🧭</div>
+            <div className="hero-portal-card-body">
+              <div className="hero-portal-card-tag" style={{ color:'#c2410c', background:'rgba(255,107,53,0.10)', border:'1px solid rgba(255,107,53,0.22)' }}>AI Assistant</div>
+              <h3 className="hero-portal-card-title">Lok-Sahayak</h3>
+              <p className="hero-portal-card-desc">Not sure which government portal to use? Our intelligent guide navigates you to the exact service you need — instantly.</p>
+            </div>
+            <div className="hero-portal-card-cta" style={{ background:'linear-gradient(135deg,#FF6B35,#e85d3a)', boxShadow:'0 4px 16px rgba(255,107,53,0.35)' }}>
+              Open Guide <span>→</span>
+            </div>
+          </a>
+
+          {/* Jan Sanchar */}
+          <a href="/public-feed" className="hero-portal-card">
+            <div className="hero-portal-card-glow" style={{ background: 'rgba(26,58,143,0.12)' }} />
+            <div className="hero-portal-card-icon">🗺️</div>
+            <div className="hero-portal-card-body">
+              <div className="hero-portal-card-tag" style={{ color:'#1e40af', background:'rgba(26,58,143,0.08)', border:'1px solid rgba(26,58,143,0.18)' }}>Live Feed</div>
+              <h3 className="hero-portal-card-title">Jan Sanchar</h3>
+              <p className="hero-portal-card-desc">Real-time civic updates and a geographic heatmap of issues across India. Stay informed, stay empowered.</p>
+            </div>
+            <div className="hero-portal-card-cta" style={{ background:'linear-gradient(135deg,#1A3A8F,#0B1D51)', boxShadow:'0 4px 16px rgba(26,58,143,0.35)' }}>
+              View Feed <span>→</span>
+            </div>
+          </a>
+
+          {/* Jan Satyapan */}
+          <a href="/news-verification" className="hero-portal-card">
+            <div className="hero-portal-card-glow" style={{ background: 'rgba(21,128,61,0.12)' }} />
+            <div className="hero-portal-card-icon">🔍</div>
+            <div className="hero-portal-card-body">
+              <div className="hero-portal-card-tag" style={{ color:'#15803d', background:'rgba(21,128,61,0.08)', border:'1px solid rgba(21,128,61,0.18)' }}>AI Verification</div>
+              <h3 className="hero-portal-card-title">Jan Satyapan</h3>
+              <p className="hero-portal-card-desc">AI-powered fact-checking of civic news and government work claims. Truth at scale — before it spreads.</p>
+            </div>
+            <div className="hero-portal-card-cta" style={{ background:'linear-gradient(135deg,#15803d,#166534)', boxShadow:'0 4px 16px rgba(21,128,61,0.35)' }}>
+              Verify Now <span>→</span>
+            </div>
+          </a>
+
         </div>
       </div>
 
